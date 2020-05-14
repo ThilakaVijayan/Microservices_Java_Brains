@@ -1,0 +1,43 @@
+This project is build on Java 11, uses Spring cloud, Rest template to build micro services.
+It is a spring boot application.
+Movie Catalog service:
+======================
+Input- userId
+Output - Movie name list with ratings.
+Rating data service:
+====================
+Input - UserId
+Output - Movie Ids list with ratings.
+Movie info serivce:
+===================
+Input- Movie id
+Output - Movie Name
+
+for a given userId 'Movie Catalog service' first calls 'Rating data service', 
+gets all the movie id list and rating, then for each movie calls 'Movie info serivce'
+
+Development Steps:
+-----------------
+1. Create 3 spring boot applications
+  a. use https://start.spring.io/ to create spring boot applications
+  b. since we need web api to build an api, we need spring mvc for it.
+  c. Add 'Spring Web' dependency in the UI, while generating the project.
+  d. 'Movie Catalog service' - create a rest controller. a methond inside the class. 
+      let the method return a list of 'CatalogItem' objects.
+  e. 'Movie info serivce' - create a rest controller. a method inside the class.
+      let the method return a list 'Movie' object.
+  f. 'application.properties' add a line 'server.port=8081'. give different port numbers for all 3 projects.
+  g. 'Rating data service' - create a rest controller. a method inside the class/
+      let the method return a list of 'Rating' object.
+   
+2. Make 'Movie Catalog service' call the other 2 services.
+  h. 'Movie Catalog service' - From 'Rating data service', copy 'Rating' class into this project. Add an empty constructor to this class.
+                             From 'Movie info service' copy 'Movie' class into this project. Add an empty constructor to this class.
+  i. 'Movie Catalog service' - use Rest template to call the other modules.
+  j. Learned using 'WebClient' instead of 'RestTemplate', since Rest template is going to be depricated soon. This code is commented out.
+     'WebCLient' jar is not present by default. If we added 'Reactive Web' while creating the spring boot project, we would have
+     got it (Spring WebFlux). So add the dependency to the pom.xml
+  k. It is bad design to return a list of objects. So create a UserRating class as a wrapper class for the list. Pass this 
+     class from 'Rating data service'. Copy userRating class inside 'Movie Catalog service' and add an empty constructor.
+3. Make the service calls using service discovery
+
