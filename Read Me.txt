@@ -1,0 +1,64 @@
+This project is built on Java 11, uses Spring cloud, Rest template to build microservices. Used Eureka for service discovery.
+It is a spring boot application.
+Movie Catalog service:
+======================
+Input- userId
+Output - Movie name list with ratings.
+Rating data service:
+====================
+Input - UserId
+Output - Movie Ids list with ratings.
+Movie info serivce:
+===================
+Input- Movie id
+Output - Movie Name
+
+for a given userId 'Movie Catalog service' first calls 'Rating data service', 
+gets all the movie id list and rating, then for each movie calls 'Movie info service'
+
+Development Steps:
+-----------------
+1. Create 3 spring boot applications
+  a. use https://start.spring.io/ to create spring boot applications
+  b. since we need web API to build an API, we need spring MVC for it.
+  c. Add 'Spring Web' dependency in the UI, while generating the project.
+  d. 'Movie Catalog service' - create a rest controller. a method inside the class. 
+      let the method return a list of 'CatalogItem' objects.
+  e. 'Movie info service' - create a rest controller. a method inside the class.
+      let the method return a list 'Movie' object.
+  f. 'application.properties' add a line 'server.port=8081'. give different port numbers for all 3 projects.
+  g. 'Rating data service' - create a rest controller. a method inside the class/
+      let the method return a list of 'Rating' object.
+   
+2. Make 'Movie Catalog service' call the other 2 services.
+  h. 'Movie Catalog service' - From 'Rating data service', copy 'Rating' class into this project. Add an empty constructor to this class.
+                             From 'Movie info service' copy 'Movie' class into this project. Add an empty constructor to this class.
+  i. 'Movie Catalog service' - use Rest template to call the other modules.
+  j. Learned using 'WebClient' instead of 'RestTemplate', since Rest template is going to be deprecated soon. This code is commented out.
+     'WebCLient' jar is not present by default. If we added 'Reactive Web' while creating the spring boot project, we would have
+     got it (Spring WebFlux). So add the dependency to the pom.xml
+  k. It is bad design to return a list of objects. So create a UserRating class as a wrapper class for the list. Pass this 
+     class from 'Rating data service'. Copy userRating class inside 'Movie Catalog service' and add an empty constructor.
+3. Make the service calls using service discovery
+  l. Create a Eureka server. Create a spring boot application 'discovery-server' - use https://start.spring.io/  
+  m. Add 'Eureka Server' dependency. Generate project.
+  n. Add the annotation 'EnableEurekaServer' before the main class definition.
+  o. Since in Java 11, JAXB has been removed from JDK, we need to add it to the project as a separate library via Maven.
+  p. jaxb-api, jaxb-impl, jaxb-runtime, javax.activation are added to the 'discovery-server' pom.
+  q. 8761 is the default port Eureka server runs on.
+  r. in application.properties - add the 2 lines to mention that this is not a client.
+  s. Now register the 3 projects to this server. 
+     i. in the pom.xml, add the Eureka client dependency. If we have added the dependency 'Eureka Discovery Client' while
+        creating the project via the Spring Initializr UI, then it would have been added by default.
+     ii. Spring cloud version is set to Greenwich
+     iii. application.properties - add a property spring.application.name
+     iv. Optional step - add @EnableEurekaClient annotation before the main class definition. This step was not mandatory 
+         before, but now it is not necessary.
+     v. This project will find the eureka server on the default port, 8761. If the server port is changed, then it should be 
+        specified in the client project as well.
+   t. Now discover the service at the client-
+     i. Add @LoadBalanced annotation before the RestTemplate bean declaration.
+     ii. Change the hardcoded url, replace localhost:8080 to the spring.application.name of the services.
+     iii. DiscoveryClient can be used for programitcally controlled load balancing.
+
+
