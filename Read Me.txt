@@ -61,4 +61,38 @@ Development Steps:
      ii. Change the hardcoded url, replace localhost:8080 to the spring.application.name of the services.
      iii. DiscoveryClient can be used for programitcally controlled load balancing.
 
-
+Level - 2 
+4. Use an external API to get movie info for the project 'Movie info service'. The external API used is from themoviedb.org. When we register to this site, we get our API key. using the API key, you can call the API. 
+   a. Make a rest call for this AP and caste the output to 'MovieSummary'. Then return the object of 'Movie' after settings   
+      its field.
+   b. Set the API key in the application properties file, and get the value of it using @Value annotation.
+5. Set Timeout for the RestTemplate instance.
+   c. Create an instance of HttpComponentsClientHttpRequestFactory. Set its field - ConnectionRequestTimeout to 3000 (for 3 
+      sec). 
+   d. Pass this object as a parameter while creating a new RestTemplate object.
+6. Add Hystrix to the spring boot microservice.
+   e. Add the maven spring-cloud-starter-netflix-hystrix dependency.
+   f. Add @EnableCircuitBreaker to the application class.
+   g. Add @HysterixCommand to the method that needs circuit breaking. 
+      i. Give a fallbackMethod. The new method should have the 
+         same method signature as the original method.
+      ii. Since there are two APIs call in the single method, and even when the first API works fine, and if the second API 
+          fails, we will still return a hard coded value. So, split the method into two of individual API call, so that there 
+          are 2 sperate fall back method of each API.  
+      iii. Since the two method is called inside a method of the class, the hystrix fall back will not be called, because of 
+           the concept of Proxy class. Proxy class is the way hystrix manages to call the fallback method when an API call 
+           fails, by creating a wraaper class around the main class. But a method inside a class class another method of the 
+           same class, which have hystrixCommand, then hystrix have no way to interrupt the call.  Hence the method which has 
+           the hystrixCommand annotated have to be in a seperate class. So put these into 2 different class 'MovieInfo' and 
+           'UserRatingInfo'.
+   h. Configure Hysterix behaviour.
+      i. Added the configuration in the 'UserRatingInfo' class, as a sample.
+   i. Hystrix dashboard.
+      i. (This is not implemented in the code).  Add maven dependency - 'spring-cloud-starter-netflix-hystrix-dashboard' and 
+         'spring-boot-starter-actuator'
+      ii. In the application class add the @EnableHystrixDashboard   
+      iii. expose an endpoint to stream the data. For this add this line in the application.properties file. 
+           'management.endpoints.web.exposure.include=hystrix.stream'
+   j. Bulkhead pattern.
+      i. Added the bulkhead related configuration to the class 'MovieInfo' as a sample. Bulkhead will set a thread pool size 
+         for a particular API call method. So that other threads are kept free for other API calls etc.
